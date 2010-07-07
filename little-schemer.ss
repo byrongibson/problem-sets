@@ -1,12 +1,12 @@
 #lang scheme
 
 ;insert λ with Ctrl+\
+;incorrect functions denoted by (troubleshoot) in their comments, for easy searching
 
-;atom primitive from little schemer not implemented in DrScheme/DrRacket
+;atom primitive from The Little Schemer not implemented in DrScheme/DrRacket
 (define atom?
    (lambda (a)
      (not (list? a))))
-
 
 ;vars for testing
 (define z
@@ -18,11 +18,11 @@
 (define latlat
   '(((an)) (oldish (sort of)) oldish (long (list of)) oldish atoms))
 (define nulllatlat
-  '(((()))((an)) (oldish (sort of)) oldish (long (list of)) oldish atoms))
-(define commalat
-  '(3 blind mice, 3 blind mice))
+  '(((()))((an)) (oldish (sort of)) ((())) oldish (long (list of(()))) oldish atoms))
 (define numlat
   '(5 pears 6 prunes 9 dates))
+(define commanumlat
+  '(3 blind mice, 3 blind mice))
 
 ;tups used for testing
 (define tup
@@ -434,9 +434,60 @@
        (makeset (cdr lat)))
       (else (cons (car lat) (makeset (cdr lat)))))))
 
-;rewrite makeset with multirember
+;rewrite makeset with multiRember; cons (car lat) to lat with all (car lat) removed from lat
 (define makesetm
   (λ (lat)
     (cond
       ((null? lat) (quote()))
-      (
+      (else (cons (car lat) (makeset (multiRember (car lat) (cdr lat))))))))
+
+;are all the atoms of lat1 in lat2?
+(define subset?
+  (λ (lat1 lat2)
+    (cond
+      ((null? lat1) #t)
+      ((atom? lat1) (member? lat1 lat2)) 
+      (else (subset? (car (cdr lat1)) lat2)))))
+
+;define subset without atom? (troubleshoot)
+(define subsets?
+  (λ (l1 l2)
+    (cond
+      ((null? l1) #t)
+      (else 
+       (and (member? (car l1) l2)
+            (subsets? (cdr l1) l2))))))
+    
+;is set1 = set2?
+(define eqset?
+  (λ (s1 s2)
+    (cond
+      ((and (null? s1)(null? s2)) #t)
+      (else (and (eq? (car s1) (car s2)) (eqset? (cdr s1)(cdr s2)))))))
+
+;rewrite eqset? using subset?
+(define eqsets?
+  (λ (s1 s2)
+      (and (subset? s1 s2) (subset? s2 s1))))
+
+;is at least one atom of set1 in set2?
+(define intersect?
+  (λ (s1 s2)
+    (cond
+      ((null? s1) #f)
+      (else (or (member? (car s1) s2) (intersect? (cdr s1) s2))))))
+
+;return the intersection of set1 and set2
+(define intersect
+  (λ (s1 s2)
+    (cond
+      ((null? s1) (quote()))
+      ((member (car s1) s2) (cons (car s1) (intersect (cdr s1) s2)))
+      (else (intersect (cdr s1) s2)))))
+
+;return the union of set1 and set2, eg return every occurance of every member in both sets exactly once
+(define union
+  (λ (s1 s2)
+    (cond
+      ((null? s1))
+      ((member? (car s1) s2) (cons (car s1) (union (cdr s1)
