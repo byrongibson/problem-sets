@@ -1,7 +1,7 @@
 #lang scheme
 
 ;insert λ with Ctrl+\
-;incorrect functions denoted by (troubleshoot) in their comments, for easy searching
+;incorrect functions denoted by (troubleshoot) in their comments, for easy searching.  book page numbers given by (p.234).
 
 ;atom primitive from The Little Schemer not implemented in DrScheme/DrRacket
 (define atom?
@@ -449,7 +449,7 @@
       ((atom? lat1) (member? lat1 lat2)) 
       (else (subset? (car (cdr lat1)) lat2)))))
 
-;define subset without atom? (troubleshoot)
+;define subset without atom? (troubleshoot) (p.115)
 (define subsets?
   (λ (l1 l2)
     (cond
@@ -485,9 +485,11 @@
       ((member (car s1) s2) (cons (car s1) (intersect (cdr s1) s2)))
       (else (intersect (cdr s1) s2)))))
 
-;return the union of set1 and set2, eg return every occurance of every member in both sets exactly once
+;return the union of set1 and set2, eg return every occurance of every member in both sets exactly once (review) (p.116)
 (define union
   (λ (s1 s2)
     (cond
-      ((null? s1))
-      ((member? (car s1) s2) (cons (car s1) (union (cdr s1)
+      ((null? s1) s2)
+      ((member (car s1) s2) (union (cdr s1) s2))
+      (else (cons (car s1) (union (cdr s1) s2))))))
+
