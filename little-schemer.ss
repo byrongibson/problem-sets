@@ -66,10 +66,13 @@
 )
 
 ;rels used for testing
+;fun but not a fullfun
 (define rel1
   '((8 3) (4 2) (7 6) (6 2) (3 4)))
+;fullfun
 (define rel2
   '((9 1) (8 2) (7 3) (6 4) (5 0)))
+;fullfun
 (define rel3
   '((0 9) (1 8) (2 7) (3 6) (4 5)))
 
@@ -745,12 +748,27 @@
 ;return the third S-exp of a list
 (define thirdl
   (λ (l)
-    (car (cdr (cdr l)))))
+    (car (cdr (cdr l)))
+  )
+)
 
-;return a list of the first s-exp of each list in the input list
+;return a list of the first s-exp of each pair in a list of pairs
 (define firsts
   (λ (l)
-    (cons (car l) (firsts (cdr l)))
+    (cond
+      ((null? l)(quote()))
+      (else (cons (car (car l)) (firsts (cdr l))))
+    )
+  )
+)
+
+;return a list of the second s-exp of each pair in a list of pairs
+(define seconds
+  (λ (l)
+    (cond
+      ((null? l)(quote()))
+      (else (cons (car (cdr (car l))) (seconds (cdr l))))
+    )
   )
 )
 
@@ -764,18 +782,44 @@
 ;return the pair with elements reversed
 (define revpair
   (λ (p)
-    ((null? p) (quote()))
-    (buildp (secondp) (firstp p))
+    (buildp (secondp p) (firstp p))
   )
 )
 
 ;return the list of pairs with the elements of each pair reversed
 (define revrel
-  (λ (s)
+  (λ (r)
     (cond
-      ((null? (cdr s)) (quote()))
-      (cons (revpair (car s)) (revrel (cdr s)))
+      ((null? r) (quote()))
+      (else (cons (revpair (car r)) (revrel (cdr r))))
     )
+  )
+)
+
+;return true if both the firsts of every pair in the rel are unique and the seconds of every pair in the rel are unique
+(define fullfun?
+  (λ (r)
+    (cond
+      ((fun? r)
+        (cond
+          ((set? (seconds r)) #t)
+          (else #f)
+        )
+      )
+    )
+  )
+)
+
+;a second way to define fullfun using only fun? and revrel
+(define one-to-one?
+  (λ (r)
+    (cond
+      ((fun? r)
+       (cond
+         ((fun? (revrel r)) #t)
+         (else #f)))
+      (else #f)
+     )
   )
 )
 
