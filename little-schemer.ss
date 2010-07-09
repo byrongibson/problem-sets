@@ -836,15 +836,6 @@
   )
 )
 
-;
-(define eq-c?
-  (λ (a)
-    (λ (x)
-      (eq? x a)
-    )
-  )
-)
-
 ;redefine rember to return a fuction that removes every element of list l that meets whatever test? comparison is passed to it
 (define rember-f
   (λ (test?)
