@@ -842,7 +842,8 @@
     (λ (a l)
       (cond
         ((null? l) (quote()))
-        ((test? (car l) a) (cons (rember-f a (cdr l))))
+        ((test? (car l) a) ((rember-f test?) a (cdr l)))
+        (else (cons (car l) ((rember-f test?) a (cdr l))))
       )
     )
   )
