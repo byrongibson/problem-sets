@@ -824,7 +824,9 @@
 )
 
 #||||||||||| Chp.8 Lambda the Ultimate |||||||||||#
-(define rember-f
+
+;redfine rember to pass the test function as variable
+(define remberf
   (λ (test? a l)
     (cond
       ((null? l) (quote()))
@@ -832,4 +834,30 @@
       (else (cons (car l)(rember-f test? a (cdr l))))
     )
   )
+)
+
+;
+(define eq-c?
+  (λ (a)
+    (λ (x)
+      (eq? x a)
+    )
+  )
+)
+
+;redefine rember to return a fuction that removes every element of list l that meets whatever test? comparison is passed to it
+(define rember-f
+  (λ (test?)
+    (λ (a l)
+      (cond
+        ((null? l) (quote()))
+        ((test? (car l) a) (cons (rember-f a (cdr l))))
+      )
+    )
+  )
+)
+
+;define rember-eq? in terms of rember-f
+(define rember-eq?
+  (rember-f eq?)
 )
