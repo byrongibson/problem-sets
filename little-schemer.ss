@@ -819,7 +819,17 @@
          ((fun? (revrel r)) #t)
          (else #f)))
       (else #f)
-     )
+    )
   )
 )
 
+#||||||||||| Chp.8 Lambda the Ultimate |||||||||||#
+(define rember-f
+  (λ (test? a l)
+    (cond
+      ((null? l) (quote()))
+      ((test? a (car l))(cdr l))
+      (else (cons (car l)(rember-f test? a (cdr l))))
+    )
+  )
+)
