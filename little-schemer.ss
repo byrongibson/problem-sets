@@ -823,6 +823,7 @@
   )
 )
 
+
 #||||||||||| Chp.8 Lambda the Ultimate |||||||||||#
 
 ;redfine rember to pass the test function as variable
@@ -853,3 +854,77 @@
 (define rember-eq?
   (rember-f eq?)
 )
+
+;redefine insertL to insertL-f
+(define insertL-f
+  (λ (test?)
+    (λ (new old lat)
+      (cond
+        ((null? lat) (quote()))
+        ((test? (car lat) old) (cons new (cons old (cdr lat))))
+        (else (cons (car lat) ((insertL-f test?) new old (cdr lat))))
+      )
+    )
+  )
+)
+
+;redefine insertR to insertR-f (troubleshoot) (p.130) (replacing old w/ new, instead of inserting new)
+(define insertR-f
+  (λ (test?)
+    (λ (new old lat)
+      (cond
+        ((null? lat) (quote()))
+        ((test? (car lat) old) (cons old (cons new (cdr lat))))
+        (else (cons (car lat) ((insertR-f test?) new old (cdr lat))))
+      )
+    )
+  )
+)
+
+;combine insertL-f and insertR-f
+(define insert-f
+  (λ (f?)
+    (λ (test?)
+      (λ (new old lat)
+        ((f? test?) new old lat)
+      )
+    )
+  )
+)
+
+;insert new to the left of old in list l
+(define segL
+  (λ (new old l)
+    (cons (new (cons old l)))
+  )
+)
+
+;insert new to the right of old in list l
+(define segR
+  (λ (new old l)
+    (cons (old (cons new l)))
+  )
+)
+
+
+(define atom-to-func
+  (λ (x)
+    (cond
+      ((eq? x (quote +)) (+))
+      ((eq? x (quote *)) (*))
+    )
+  )
+)
+
+;redefine value using atom-to-func
+(define value-f
+  (λ (aexp)
+    (cond
+      ((atom? aexp) aexp)
+      (((atom-to-func (operator aexp))
+        (value-f (1st-sub-exp aexp))
+        (value-f (2nd-sub-exp aexp))))
+    )
+  )
+)
+
