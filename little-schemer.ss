@@ -9,8 +9,8 @@
 
 ;atom primitive from The Little Schemer not implemented in DrScheme/DrRacket
 (define atom?
-   (lambda (a)
-     (not (list? a))
+   (λ (a)
+     (and (not (null? a)) (not (pair? a)) (not (list? a)))
    )
 )
 
@@ -29,6 +29,10 @@
   '(5 pears 6 prunes 9 dates))
 (define commanumlat
   '(3 blind mice, 3 blind mice))
+(define looklat1
+  '(6 2 4 caviar 5 7 3))
+(define looklat2
+  '(7 1 2 caviar 5 6 3))
 
 ;tups used for testing
 (define tup
@@ -47,12 +51,18 @@
 ;sets used for testing
 (define pair
   '(1 2))
+(define twopair
+  '((1 2) (3 4)))
 (define pairs
   '(one (two)))
 (define spairs
   '((one) (two)))
 (define pairset
   '((a b c d) (e f g h)))
+(define nums
+  '(0 1 2 3 4 5 6 7 8 9))
+(define numsnums
+  '(0 (1 2 3) 4 5 (6 7 (8 9))))
 (define lset
   '((a b c)
     (c a d e)
@@ -928,3 +938,81 @@
   )
 )
 
+;write multiInsertLR&co with a continuation
+(define multiInsertLR&co
+  (λ (new oldL oldR lat col)
+    (cond
+      ((null? lat) (col (quote()) 0 0))
+      ((eq? (car lat) oldL)
+       (multiInsertLR&co new oldL oldR
+                         (cdr lat)
+                         (λ (newlat L R)
+                           (col (cons new (cons oldL newlat)) add1 L) R)))
+      ((eq? (car lat) oldR)
+       (multiInsertLR&co new oldL oldR
+                         (cdr lat)
+                         (λ (newlat L R)
+                           (col (cons oldR (cons new newlat)) L) add1 R)))
+      (else (multiInsertLR&co new oldL oldR
+                              (cdr lat)
+                              (λ (newlat L R)
+                                (col (cons (car lat) newlat) L R))))
+    )
+  )
+)
+
+;return numnums with all odd numbers removed.  numnums can be a list of lists, atoms, or empty
+(define evens-only*
+  (λ (l)
+    (cond
+      ((null? l)(quote()))
+      ((atom? (car l))
+       (cond
+         ((even? (car l)) (cons (car l) (evens-only* (cdr l))))
+         (else (evens-only* (cdr l)))))
+       (else (cons (evens-only* (car l)) (evens-only* (cdr l))))
+    )
+  )
+)
+
+;visit every number in numnums, build a list of evens-only, the product of all evens, and the sum of all odds.  Used continuations.
+#|(define evens-only&co
+  (λ (l col)
+    (cond
+  |#
+
+;define keep-looking (p.150) (sorn ~ symbol or number)
+(define keep-looking
+  (λ (a sorn lat)
+    (cond
+      ((number? sorn) (keep-looking (a (pick sorn lat) lat)))
+      (else (eq? sorn a))
+    )
+  )
+) 
+
+;define looking (p.149)
+(define looking
+  (λ (a lat)
+    (keep-looking a (pick 1 lat) lat)
+  )
+)
+
+;define shift
+(define shift
+  (λ (pair)
+    (buildp (first (first pair))
+           (buildp (second (first pair)) (second pair)))
+  )
+)
+
+;define align
+(define align
+  (λ (pora)
+    (cond
+      ((atom? pora) pora)
+      ((pair? (first pora)) (align (shift pora)))
+      (else (buildp (first pora) (align (second pora))))
+    )
+  )
+)
