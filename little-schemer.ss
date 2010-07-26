@@ -1,4 +1,5 @@
 #lang scheme
+(require (lib "trace.ss"))
 
 ;insert λ in DrScheme/DrRacket with Ctrl+\.
 
@@ -14,9 +15,6 @@
    )
 )
 
-;vars for testing
-(define z
-  '0)
 
 ;lists of atoms used for testing
 (define lat
@@ -85,6 +83,7 @@
 ;fullfun
 (define rel3
   '((0 9) (1 8) (2 7) (3 6) (4 5)))
+
 
 ;is l a list of atoms?
 (define lat?
@@ -833,7 +832,6 @@
   )
 )
 
-
 #||||||||||| Chp.8 Lambda the Ultimate |||||||||||#
 
 ;redfine rember to pass the test function as variable
@@ -842,7 +840,7 @@
     (cond
       ((null? l) (quote()))
       ((test? a (car l))(cdr l))
-      (else (cons (car l)(rember-f test? a (cdr l))))
+      (else (cons (car l)(remberf test? a (cdr l))))
     )
   )
 )
@@ -864,6 +862,19 @@
 (define rember-eq?
   (rember-f eq?)
 )
+
+;(p.127)
+(define eq?-c
+  (λ (a)
+    (λ (x)
+      (eq? x a)
+    )
+  )
+)
+
+;(p.128)
+(define eq?-salad (eq?-c 'salad))
+(define eq?-oldish (eq?-c 'oldish))
 
 ;redefine insertL to insertL-f
 (define insertL-f
@@ -891,32 +902,62 @@
   )
 )
 
-;combine insertL-f and insertR-f
-(define insert-f
-  (λ (f?)
-    (λ (test?)
-      (λ (new old lat)
-        ((f? test?) new old lat)
-      )
-    )
-  )
-)
-
 ;insert new to the left of old in list l
 (define segL
   (λ (new old l)
-    (cons (new (cons old l)))
+    (cons new (cons old l))
   )
 )
 
 ;insert new to the right of old in list l
 (define segR
   (λ (new old l)
-    (cons (old (cons new l)))
+    (cons old (cons new l))
   )
 )
 
+;substitute new for old in list l
+(define segS
+  (λ (new old l)
+    (cons new l)
+  )
+)
 
+;combine insertL-f and insertR-f
+(define insert-g
+  (λ (seg)
+    (λ (test?)
+      (λ (new old lat)
+        (cond
+          ((null? lat) (quote()))
+          ((test? (car lat) old) (seg new old (((insert-g seg) test?) new old (cdr lat))))
+          (else (cons (car lat) (((insert-g seg) test?) new old (cdr lat))))
+        )
+      )
+    )
+  )
+)
+
+;define insert-L in terms of insert-g
+(define insert-L (insert-g segL))
+
+;define insert-R in terms of insert-g
+(define insert-R (insert-g segR))
+
+;define insert-S in terms of insert-g
+(define insert-S (insert-g segS))
+
+;define rember in terms of insert-g
+(define segrem
+  (λ (new old l) l)
+)
+(define rember-G
+  (λ (a l)
+    ((insert-g segrem) #f a l)
+  )
+)
+
+;used to test if an atom is + or * operator 
 (define atom-to-func
   (λ (x)
     (cond
@@ -938,6 +979,43 @@
   )
 )
 
+;multiremberT
+(define multiremberT
+  (λ (test? lat)
+    (cond
+      ((null? lat) (quote ()))
+      ((test? (car lat)) (multiremberT test? (cdr lat)))
+      (else (cons (car lat) (multiremberT test? (cdr lat))))
+    )
+  )
+)
+
+;multirember with collection
+(define multirember&co
+  (λ (a lat col)
+    (cond
+      ((null? lat) (col (quote()) (quote())))
+      ((eq? (car lat) a)
+       (multirember&co a (cdr lat) (λ (newlat seen) (col newlat (cons (car lat) seen)))))
+      (else (multirember&co a (cdr lat) (λ (newlat seen) (col (cons (car lat) newlat) seen))))
+    )
+  )
+)
+
+;test collectors
+(define a-friend
+  (λ (x y)
+    (null? y)
+  )
+)
+
+(define new-friend
+  (λ (newlat seen)
+    (a-friend newlat (cons (car lat) seen))
+  )
+)
+
+                                         
 ;write multiInsertLR&co with a continuation
 (define multiInsertLR&co
   (λ (new oldL oldR lat col)
@@ -985,7 +1063,7 @@
 (define keep-looking
   (λ (a sorn lat)
     (cond
-      ((number? sorn) (keep-looking (a (pick sorn lat) lat)))
+      ((number? sorn) (keep-looking a (pick sorn lat) lat))
       (else (eq? sorn a))
     )
   )
@@ -993,7 +1071,7 @@
 
 ;define looking (p.149)
 (define looking
-  (λ (a lat)
+  (λ (a sorn lat)
     (keep-looking a (pick 1 lat) lat)
   )
 )
@@ -1014,5 +1092,76 @@
       ((pair? (first pora)) (align (shift pora)))
       (else (buildp (first pora) (align (second pora))))
     )
+  )
+)
+
+;define length = # of atoms in align's argument
+(define length*
+  (λ (pora)
+    (cond
+      ((atom? pora) 1)
+      (else (+ (length* (firstp pora)) (length* (secondp pora))))
+    )
+  )
+)
+
+;weight = length* with first pora double weighted
+(define weight*
+  (λ (pora)
+    (cond
+      ((atom? pora) 1)
+      (else (+ (* 2 (weight* (firstp pora))) (weight* (secondp pora))))
+    )
+  )
+)
+
+;shuffle pora (p.154)
+(define shuffle
+  (λ (pora)
+    (cond
+      ((atom? pora) pora)
+      ((pair? (firstp pora)) (shuffle (revpair pora)))
+      (else (buildp (firstp pora) (shuffle (secondp pora))))
+    )
+  )
+)
+
+;Ycombinator
+#|((λ (length)
+   (λ (l)
+     (cond
+       ((null? l) 1)
+       (else (add1 (length (cdr l))))
+     )
+   )
+ )
+)|#
+
+#|((λ (make-length) (make-length eternity))
+ (λ (length)
+   (λ (l)
+     (cond
+       ((null? l) 1)
+       (else (add1 (length (cdr l))))
+     )
+   )
+ )
+)|#
+
+((λ (mk-length) (mk-length mk-length))
+ (λ (mk-length)
+   (λ (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 ((mk-length mk-length) (cdr l))))
+     )
+   )
+ )
+)
+
+(define Y
+  (λ (le)
+    (λ (f) (f f))
+    (λ (f) (le (λ (x) ((f f) x))))
   )
 )

@@ -5,7 +5,7 @@
 ;comment key words:
 ;(troubleshoot) : not working, review and fix
 ;(difficult)    : didn't get it, had to look at answer, review
-;(p.1234)       : page in The Little Schemer this code appears on
+;(p.1234)       : page in The Seasoned Schemer this code appears on
 
 ;required primitives not implemented in DrScheme/DrRacket
 (define atom?
@@ -14,7 +14,7 @@
    )
 )
 
-;lists of atoms used for testing
+;lists of lists of atoms used for testing
 (define lat
   '(an oldish sort of oldish long list of oldish atoms))
 (define latlat

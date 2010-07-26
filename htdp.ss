@@ -87,8 +87,11 @@
 ;; distance-to-0 takes a-posn (cartesian coordinate x,y) and calculates its distance to origin 0,0
 ;; make-posn and a-posn are defined in the teachpack
 ;; d = (sqrt ((sqr x) + (sqr y)))
-(define (distance-to-0 a-posn)
-  (sqrt (+ (sqr (posn-x a-posn)) (sqr (posn-y a-posn))))
+(define (distance-to-0 p)
+  (cond
+    [(number? p) p]
+    [(posn? p) (sqrt (+ (sqr (posn-x p)) (sqr (posn-y p))))]
+  )
 )
 
 ;; (6.3)
@@ -122,10 +125,35 @@
 (define Y-GREEN (+ Y-YELLOW BULB-DISTANCE (* 2 BULB-RADIUS)))
 
 ;; draw the light with the red bulb turned on
-(define draw-traffic-light
-  (start WIDTH HEIGHT)
+;; (define (draw-traffic-light)
+  ;;(start WIDTH HEIGHT)
   ;;(draw-solid-disk (make-posn X-BULBS Y-RED) BULB-RADIUS 'red)
   ;;(draw-circle (make-posn X-BULBS Y-YELLOW) BULB-RADIUS 'yellow)
   ;;(draw-circle (make-posn X-BULBS Y-GREEN) BULB-RADIUS 'green)
+;; )
+
+
+;; two shapes square, circle
+;; nw = northwest corner (origin of a square)
+;; o = origin of a circle
+(define-struct square (nw len))
+(define-struct circle (o r))
+
+;; perimeter : shape -> number
+;; compute the perimter of a-shape
+(define (perimeter a-shape)
+  (cond
+    [(square? a-shape) (* 4 (square-len a-shape))]
+    [(circle? a-shape) (* pi (* 2 (circle-r a-shape)))]
+  )
+)
+
+;; f : shape -> ???
+;; 
+(define (f a-shape)
+  (cond
+    [(square? a-shape) ... ]
+    [(circle? a-shape) ... ]
+  )
 )
 
